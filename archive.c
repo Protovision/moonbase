@@ -86,6 +86,7 @@ ASSET *archive_load_font( const char *filename, int size )
 {
 	ASSET *asset;
 	TTF_Font *font;
+	char buf[264];
 
 	asset = asset_find( filename );
 	if ( asset != NULL ) {
@@ -95,7 +96,8 @@ ASSET *archive_load_font( const char *filename, int size )
 	if ( font == NULL ) {
 		fatal( "Failed to load font %s:\n%s\n", filename, TTF_GetError() );
 	}
-	return asset_create( font, ASSET_FONT, filename );
+	SDL_snprintf( buf, 256, "%s:%d", filename, size );
+	return asset_create( font, ASSET_FONT, buf );
 }
 
 ASSET *archive_load_image( const char *filename )
