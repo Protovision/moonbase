@@ -9,6 +9,7 @@
 #include "SDL_ttf.h"
 #include "SDL_mixer.h"
 #include "unzip.h"
+#include "luacom.h"
 #include <talloc.h>
 #include <json-c/linkhash.h>
 
