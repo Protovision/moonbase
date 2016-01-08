@@ -12,6 +12,9 @@
 #include <talloc.h>
 #include <json-c/linkhash.h>
 
+#define MAX_STRING	32000
+#define MAX_PATHNAME	256
+
 typedef SDL_Point	Point;
 typedef SDL_Rect	Rectangle;
 typedef struct {
