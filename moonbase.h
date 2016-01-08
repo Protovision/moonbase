@@ -12,22 +12,12 @@
 #include <talloc.h>
 #include <json-c/linkhash.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <stdarg.h>
-
-#define MAX_STRING	36000
-#define	MAX_PATHNAME	256
-
 typedef SDL_Point	Point;
 typedef SDL_Rect	Rectangle;
 typedef struct {
 	int	w;
 	int	h;
 } Size;
-
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define hton32(X)	(SDL_Swap32(X))
