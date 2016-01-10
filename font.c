@@ -125,9 +125,7 @@ static luaL_Reg moonbase_text_methods[] = {
 
 int moonbase_text_initialize( lua_State *s )
 {
-	lua_newtable( s );
-	luaL_setfuncs( s, moonbase_text_methods, 0 );
-	//luaL_newlib( s, moonbase_text_methods );
+	luaL_newlib( s, moonbase_text_methods );
 	return 1;
 }
 
