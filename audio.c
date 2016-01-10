@@ -9,13 +9,17 @@ static struct {
 
 void audio_initialize( )
 {
-	SDL_AudioSpec desired;
-
 	if ( !SDL_WasInit(SDL_INIT_AUDIO) ) {
 		if ( SDL_InitSubSystem(SDL_INIT_AUDIO) ) {
 			fatal( SDL_GetError() );
 		}
 	}
+}
+
+void audio_start_mixer( )
+{
+	SDL_AudioSpec desired;
+
 	memset( &desired, 0, sizeof(desired) );
 	desired.freq = audio_options.frequency;
 	desired.format = audio_options.format;
@@ -32,13 +36,17 @@ void audio_initialize( )
 	audio_initialized = 1;
 }
 
-void audio_shutdown( )
+void audio_stop_mixer( )
 {
 	Mix_Pause( -1 );
 	Mix_CloseAudio( );
+	audio_initialized = 0;
+}
+
+void audio_shutdown( )
+{
 	SDL_AudioQuit( );
 	SDL_QuitSubSystem( SDL_INIT_AUDIO );
-	audio_initialized = 0;
 }
 
 int audio_get_audio_channels( )

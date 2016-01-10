@@ -140,6 +140,8 @@ ASSET	*archive_load_sound( const char *file );
 
 void	audio_initialize( );
 void	audio_shutdown( );
+void	audio_start_mixer( );
+void	audio_stop_mixer( );
 
 #define audio_restart( )	do { audio_shutdown( ); audio_initialize( ); } while ( 0 )
 #define	audio_pause( )		((void)(Mix_Pause(-1)))

@@ -132,7 +132,6 @@ void video_shutdown( )
 {
 	int i, j;
 
-	video_stop_window( );
 	SDL_QuitSubSystem( SDL_INIT_VIDEO );
 	if ( video_options.driver != NULL ) {
 		SDL_free( video_options.driver );

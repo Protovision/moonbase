@@ -8,6 +8,7 @@ void game_initialize( )
 	if ( archive_contains(base_config_script) ) {
 		archive_load_script( base_config_script );
 	}
+	audio_start_mixer( );
 	video_start_window( );
 	archive_load_script( base_main_script );
 	if ( luacom_get_global_field(base_engine_state, "moonbase", "event", "initialize", NULL) ) {
@@ -105,5 +106,6 @@ void game_shutdown( )
 		lua_call( base_engine_state, 0, 0 );
 	}
 	video_stop_window( );
+	audio_stop_mixer( );
 	lua_settop( base_engine_state, 0 );
 }
