@@ -17,7 +17,7 @@ void game_initialize( )
 	lua_getglobal( base_engine_state, "moonbase" );
 	base_game_state = lua_newthread( base_engine_state );
 	lua_setfield( base_engine_state, -2, "gameThread_" );
-	lua_getglobal( base_game_state, "main" );
+	luacom_get_global_field( base_game_state, "moonbase", "main", NULL );
 	lua_resume( base_game_state, base_engine_state, 0 );
 }
 

@@ -55,7 +55,7 @@ void base_initialize( int argc, char *argv[] )
 	base_fps = 30;
 
 	SDL_Init( 0 );
-	log_set_verbosity( LOG_INFO );
+	log_set_verbosity( LOG_VERBOSE );
 
 	for ( i = 1; i < argc; ++i ) {
 		if ( argv[i][0] != '-' ) {
@@ -174,13 +174,23 @@ static int moonbase_set_fps( lua_State *s )
 static int moonbase_yield( lua_State *s )
 {
 	lua_yield( base_game_state, 0 );
-	return 0;
+	return lua_gettop( base_game_state );
 }
 
 static int moonbase_resume( lua_State *s )
 {
-	lua_resume( base_game_state, base_engine_state, 0 );
-	return 0;
+	int nargs;
+
+	nargs = lua_gettop( base_engine_state );
+	lua_xmove( base_engine_state, base_game_state, nargs );
+	lua_resume( base_game_state, base_engine_state, nargs );
+	return lua_gettop( base_game_state );
+}
+
+static int moonbase_get_ticks( lua_State *s )
+{
+	lua_pushunsigned( s, SDL_GetTicks() );
+	return 1;
 }
 
 static luaL_Reg moonbase_methods[] = {
@@ -188,6 +198,7 @@ static luaL_Reg moonbase_methods[] = {
 	{ "setFps", moonbase_set_fps },
 	{ "yield", moonbase_yield },
 	{ "resume", moonbase_resume },
+	{ "getTicks", moonbase_get_ticks },
 	{ "quit", moonbase_quit },
 	{ NULL, NULL }
 };
