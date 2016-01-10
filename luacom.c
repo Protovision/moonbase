@@ -172,7 +172,7 @@ int luacom_get_global_field( lua_State *s, const char *global, ... )
 {
 	int top, i;
 	va_list v;
-	char *field;
+	const char *field;
 
 	va_start( v, global );
 	lua_getglobal( s, global );
@@ -180,7 +180,8 @@ int luacom_get_global_field( lua_State *s, const char *global, ... )
 	for ( ;; ) {
 		field = va_arg( v, const char* );
 		if ( field == NULL ) break;
-		lua_getfield( s, -1, field );
+		lua_pushstring( s, field );
+		lua_rawget( s, -2 );
 		if ( lua_isnil(s, -1) ) {
 			lua_settop( s, top - 1 );
 			va_end( v );

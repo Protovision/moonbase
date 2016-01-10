@@ -157,7 +157,8 @@ luaL_Reg moonbase_image_methods[] = {
 	{ "getSize", moonbase_image_get_size },
 	{ "getAlpha", moonbase_image_get_alpha },
 	{ "setAlpha", moonbase_image_set_alpha },
-	{ "__gc", moonbase_image_gc }
+	{ "__gc", moonbase_image_gc },
+	{ NULL, NULL }
 };
 
 int moonbase_image_initialize( lua_State *s )

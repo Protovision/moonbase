@@ -4,7 +4,6 @@ void game_initialize( )
 {
 	extern int moonbase_initialize( lua_State * );
 
-	log_info( "Initializing game.\n" );
 	moonbase_initialize( base_engine_state );
 	if ( archive_contains(base_config_script) ) {
 		archive_load_script( base_config_script );
@@ -102,7 +101,6 @@ void game_update( )
 
 void game_shutdown( )
 {
-	log_info( "Shutting down game.\n" );
 	if ( luacom_get_global_field(base_engine_state, "moonbase", "event", "shutdown", NULL) ) {
 		lua_call( base_engine_state, 0, 0 );
 	}

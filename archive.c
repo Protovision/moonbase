@@ -169,15 +169,16 @@ static int moonbase_archive_sound( lua_State *s )
 	return 1;
 }
 
-static luaL_Reg moonarchive_handle_methods[] = {
+static luaL_Reg moonbase_archive_methods [] = {
 	{ "font", moonbase_archive_font },
 	{ "image", moonbase_archive_image },
-	{ "sound", moonbase_archive_sound }
+	{ "sound", moonbase_archive_sound },
+	{ NULL, NULL }
 };
 
 int moonbase_archive_initialize( lua_State *s )
 {
-	luaL_newlib( s, moonarchive_handle_methods );
+	luaL_newlib( s, moonbase_archive_methods );
 	return 1;
 }
 

@@ -74,7 +74,8 @@ static int moonbase_font_gc( lua_State *s )
 luaL_Reg moonbase_font_methods[] = {
 	{ "render", moonbase_font_render },
 	{ "getRenderSize", moonbase_font_get_render_size },
-	{ "__gc", moonbase_font_gc }
+	{ "__gc", moonbase_font_gc },
+	{ NULL, NULL }
 };
 
 int moonbase_font_initialize( lua_State *s )
@@ -118,12 +119,15 @@ static luaL_Reg moonbase_text_methods[] = {
 	{ "isActive", moonbase_text_is_active },
 	{ "start", moonbase_text_start },
 	{ "stop", moonbase_text_stop },
-	{ "setRect", moonbase_text_set_rect }
+	{ "setRect", moonbase_text_set_rect },
+	{ NULL, NULL }
 };
 
 int moonbase_text_initialize( lua_State *s )
 {
-	luaL_newlib( s, moonbase_text_methods );
+	lua_newtable( s );
+	luaL_setfuncs( s, moonbase_text_methods, 0 );
+	//luaL_newlib( s, moonbase_text_methods );
 	return 1;
 }
 

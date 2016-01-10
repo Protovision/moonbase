@@ -10,8 +10,6 @@ lua_State	*base_engine_state;
 lua_State	*base_game_state;
 int		base_fps;
 
-char		log_critical_buffer[ 4096 ];
-
 static void *base_engine_state_allocator( void *ud, void *ptr, size_t osize, size_t nsize )
 {
 	if ( nsize == 0 ) {
@@ -30,24 +28,23 @@ static int base_archive_searcher( lua_State *s )
 
 static void base_help( const char *argv0 )
 {
-	log_info(
+	printf(
 		"Moonbase\n"
 		"An engine for Lua-driven applications.\n"
 		"Usage: %s [options] [game] \n\n"
-		"game          Path of game archive to load (Default: game.zip)\n"
-		"-c, --config  Load specified script before window has been initialized (Default: config.lua)\n"
-		"-m, --main    Load specified script after window has been initialized (Default: main.lua)\n"
-		"-d, --data    Path for game to save data (Default value platform dependent)\n"
-		"-p, --pool    Have lua use a memory pool; specify size of pool in megabytes\n",
+		"game   Path of game archive to load (Default: game.zip)\n"
+		"-c     Specify script to load before window creation (Default: config.lua)\n"
+		"-m     Specify script to load after window creation (Default: main.lua)\n"
+		"-d     Path for game to save data (Default value platform dependent)\n"
+		"-p     Have lua use a memory pool; specify size of pool in megabytes\n"
+		"-l     Set log level from 1-6, higher is more verbose. (Default: 4)\n",
 		argv0 );
 }
 
 void base_initialize( int argc, char *argv[] )
 {
-	int i;
+	int i, ch;
 	char *p;
-
-	log_info( "Initializing base\n" );
 
 	base_pool_size = 0;
 	base_pool = NULL;
@@ -57,6 +54,9 @@ void base_initialize( int argc, char *argv[] )
 	base_main_script = NULL;
 	base_fps = 30;
 
+	SDL_Init( 0 );
+	log_set_verbosity( LOG_INFO );
+
 	for ( i = 1; i < argc; ++i ) {
 		if ( argv[i][0] != '-' ) {
 			if ( base_game_path != NULL ) {
@@ -65,7 +65,11 @@ void base_initialize( int argc, char *argv[] )
 			base_game_path = SDL_strdup( argv[i] );
 			continue;
 		}
-		switch ( argv[i][1] ) {
+		ch = argv[i][0];
+		if ( ch == '-' ) {
+			ch = argv[i][1];
+		}
+		switch ( ch ) {
 		case 'c':
 			base_config_script = SDL_strdup( argv[++i] );
 			break;
@@ -77,6 +81,13 @@ void base_initialize( int argc, char *argv[] )
 			break;
 		case 'd':
 			base_data_path = SDL_strdup( argv[++i] );
+			break;
+		case 'l':
+			if ( SDL_isdigit(argv[i+1][0]) ) {
+				log_set_verbosity( SDL_atoi(argv[++i]) );
+			} else {
+				log_increment_verbosity( );
+			}
 			break;
 		case 'h':
 			base_help( argv[0] );
@@ -99,7 +110,6 @@ void base_initialize( int argc, char *argv[] )
 		base_data_path = SDL_GetPrefPath( "swoope", "moonbase" );
 	}
 
-	SDL_Init( 0 );
 	TTF_Init( );
 	IMG_Init( IMG_INIT_JPG|IMG_INIT_PNG );
 	asset_initialize( );
@@ -119,16 +129,7 @@ void base_initialize( int argc, char *argv[] )
 		fatal( "Failed to initialize Lua\n" );
 	}
 
-	luaL_requiref( base_engine_state, "_G", luaopen_base, 1 );
-	luaL_requiref( base_engine_state, "package", luaopen_package, 1 );
-	luaL_requiref( base_engine_state, "table", luaopen_table, 1 );
-	luaL_requiref( base_engine_state, "string", luaopen_string, 1 );
-	luaL_requiref( base_engine_state, "bit32", luaopen_bit32, 1 );
-	luaL_requiref( base_engine_state, "math", luaopen_math, 1 );
-	luaL_requiref( base_engine_state, "debug", luaopen_debug, 1 );
-	luaL_requiref( base_engine_state, "io", luaopen_io, 1 );
-	lua_settop( base_engine_state, 0 );
-
+	luaL_openlibs( base_engine_state );
 	luacom_get_global_field( base_engine_state, "package", "searchers", NULL );
 	lua_pushcfunction( base_engine_state, base_archive_searcher );
 	lua_pushinteger( base_engine_state, 5 );
@@ -138,13 +139,12 @@ void base_initialize( int argc, char *argv[] )
 
 void base_shutdown( )
 {
-	log_info( "Shutting down base\n" );
 	lua_close( base_engine_state );
 	if ( base_pool != NULL ) {
 		talloc_free( base_pool );
 	}
-	asset_shutdown( );
 	archive_shutdown( );
+	asset_shutdown( );
 	IMG_Quit( );
 	TTF_Quit( );
 	SDL_free( base_game_path );
@@ -153,44 +153,49 @@ void base_shutdown( )
 	SDL_free( base_main_script );
 }
 
-int moonbase_quit( lua_State *s )
+static int moonbase_quit( lua_State *s )
 {
-	log_info( "Shutting down moonbase\n" );
 	quit( 0 );
 	return 0;
 }
 
-int moonbase_get_fps( lua_State *s )
+static int moonbase_get_fps( lua_State *s )
 {
 	lua_pushinteger( s, base_fps );
 	return 1;
 }
 
-int moonbase_set_fps( lua_State *s )
+static int moonbase_set_fps( lua_State *s )
 {
 	base_fps = luaL_checkinteger( s, 1 );
 	return 0;
 }
 
-int moonbase_yield( lua_State *s )
+static int moonbase_yield( lua_State *s )
 {
 	lua_yield( base_game_state, 0 );
 	return 0;
 }
 
-int moonbase_resume( lua_State *s )
+static int moonbase_resume( lua_State *s )
 {
 	lua_resume( base_game_state, base_engine_state, 0 );
 	return 0;
 }
 
-luaL_Reg moonbase_methods[] = {
+static luaL_Reg moonbase_methods[] = {
 	{ "getFps", moonbase_get_fps },
 	{ "setFps", moonbase_set_fps },
 	{ "yield", moonbase_yield },
 	{ "resume", moonbase_resume },
-	{ "quit", moonbase_quit }
+	{ "quit", moonbase_quit },
+	{ NULL, NULL }
 };
+
+int moonbase_dummy_function( lua_State *s )
+{
+	return 0;
+}
 
 void moonbase_initialize( lua_State *s )
 {
@@ -199,11 +204,15 @@ void moonbase_initialize( lua_State *s )
 	moonbase_video_initialize( lua_State * ),
 	moonbase_archive_initialize( lua_State * ),
 	moonbase_storage_initialize( lua_State * ),
-	moonbase_text_initialize( lua_State *s );
+	moonbase_text_initialize( lua_State * ),
+	moonbase_log_initialize( lua_State * );
 
-	log_info( "Initializing moonbase\n" );
 	lua_newtable( s );
 	luaL_setfuncs( s, moonbase_methods, 0 );
+	moonbase_text_initialize( s );
+	lua_setfield( s, 1, "text" );
+	moonbase_log_initialize( s );
+	lua_setfield( s, 1, "log" );
 	moonbase_audio_initialize( s );
 	lua_setfield( s, 1, "audio" );
 	moonbase_video_initialize( s );
@@ -212,9 +221,15 @@ void moonbase_initialize( lua_State *s )
 	lua_setfield( s, 1, "archive" );
 	moonbase_storage_initialize( s );
 	lua_setfield( s, 1, "storage" );
-	moonbase_text_initialize( s );
-	lua_setfield( s, 1, "text" );
 	lua_newtable( s );
+	lua_pushcfunction( s, moonbase_dummy_function );
+	lua_pushvalue( s, -1 );
+	lua_pushvalue( s, -1 );
+	lua_pushvalue( s, -1 );
+	lua_setfield( s, 2, "initialize" );
+	lua_setfield( s, 2, "input" );
+	lua_setfield( s, 2, "update" );
+	lua_setfield( s, 2, "shutdown" );
 	lua_setfield( s, 1, "event" );
 	lua_setglobal( s, "moonbase" );
 }

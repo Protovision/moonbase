@@ -19,7 +19,8 @@ $(BUILD_DIR)/$(EXE) : $(OBJ)
 	$(CC) $(INCLUDE_FLAGS) -g -o $@ $^ $(LINK_FLAGS)
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR)/obj
+	rm $(BUILD_DIR)/$(EXE)
 
 makedirs:
 	if [ ! -d $(BUILD_DIR)/obj ]; then mkdir -p $(BUILD_DIR)/obj; fi

@@ -11,7 +11,6 @@ void audio_initialize( )
 {
 	SDL_AudioSpec desired;
 
-	log_info( "Initializing audio.\n" );
 	if ( !SDL_WasInit(SDL_INIT_AUDIO) ) {
 		if ( SDL_InitSubSystem(SDL_INIT_AUDIO) ) {
 			fatal( SDL_GetError() );
@@ -35,7 +34,6 @@ void audio_initialize( )
 
 void audio_shutdown( )
 {
-	log_info( "Shutting down audio.\n" );
 	Mix_Pause( -1 );
 	Mix_CloseAudio( );
 	SDL_AudioQuit( );
@@ -224,7 +222,9 @@ static luaL_Reg moonbase_audio_methods[] = {
 	{ "setFrequency", moonbase_audio_set_frequency },
 	{ "setSamples", moonbase_audio_set_samples },
 	{ "setSoundChannels", moonbase_audio_set_sound_channels },
-	{ "setVolume", moonbase_audio_set_volume }
+	{ "setVolume", moonbase_audio_set_volume },
+
+	{ NULL, NULL }
 };
 
 int moonbase_audio_initialize( lua_State *s )
@@ -286,7 +286,8 @@ static luaL_Reg moonbase_channel_methods[] = {
 	{ "resume", moonbase_channel_resume },
 	{ "stop", moonbase_channel_stop },
 	{ "getVolume", moonbase_channel_get_volume },
-	{ "setVolume", moonbase_channel_set_volume }
+	{ "setVolume", moonbase_channel_set_volume },
+	{ NULL, NULL }
 };
 
 static int moonbase_sound_play( lua_State *s )
@@ -325,5 +326,6 @@ static int moonbase_sound_gc( lua_State *s )
 luaL_Reg moonbase_sound_methods[] = {
 	{ "play", moonbase_sound_play },
 	{ "loop", moonbase_sound_loop },
-	{ "__gc", moonbase_sound_gc }
+	{ "__gc", moonbase_sound_gc },
+	{ NULL, NULL }
 };

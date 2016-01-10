@@ -50,7 +50,8 @@ static int moonbase_storage_remove( lua_State *s )
 static luaL_Reg moonbase_storage_methods[] = {
 	{ "open", moonbase_storage_open },
 	{ "rename", moonbase_storage_rename },
-	{ "remove", moonbase_storage_remove }
+	{ "remove", moonbase_storage_remove },
+	{ NULL, NULL }
 };
 
 int moonbase_storage_initialize( lua_State *s )

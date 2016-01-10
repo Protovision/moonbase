@@ -13,6 +13,8 @@
 #include <talloc.h>
 #include <json-c/linkhash.h>
 
+#include <signal.h>
+
 #define MAX_STRING	32000
 #define MAX_PATHNAME	256
 
@@ -29,23 +31,34 @@ typedef struct {
 #define hton32(X)	(X)
 #endif
 
-char	*vstr( const char *fmt, ... );
-char	*joinpath( const char *base, const char *p );
+/***********************************************************
+ * log.c 
+ **********************************************************/
 
-extern char log_critical_buffer[ 4096 ];
+enum {
+	LOG_CRITICAL = 1,
+	LOG_ERROR,
+	LOG_WARN,
+	LOG_INFO,
+	LOG_DEBUG,
+	LOG_VERBOSE
+};
 
-#define log_verbose( f, ... )	((void)SDL_LogVerbose( SDL_LOG_CATEGORY_APPLICATION, (f), ##__VA_ARGS__ ))
-#define log_debug( f, ... )	((void)SDL_LogDebug( SDL_LOG_CATEGORY_APPLICATION, (f), ##__VA_ARGS__ ))
-#define log_info( f, ... )	((void)SDL_LogInfo( SDL_LOG_CATEGORY_APPLICATION, (f), ##__VA_ARGS__ ))
-#define log_warning( f, ... )	((void)SDL_LogWarn( SDL_LOG_CATEGORY_APPLICATION, (f), ##__VA_ARGS__ ))
-#define log_error( f, ... )	((void)SDL_LogError( SDL_LOG_CATEGORY_ERROR, (f), ##__VA_ARGS__ ))
+int	log_get_verbosity( );
+void	log_set_verbosity( int level );
+void	log_increment_verbosity( );
+void	log_decrement_Verbosity( );
+void	log_printf( int level, const char *fmt, ... );
+
+extern char fatal_buffer[ 4096 ];
 #define fatal( f, ... )	do { \
-	SDL_snprintf( log_critical_buffer, 4096, (f), ##__VA_ARGS__ ); \
-	SDL_LogCritical( SDL_LOG_CATEGORY_ERROR, "%s", log_critical_buffer ); \
-	SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Critical", log_critical_buffer, NULL ); \
+	SDL_snprintf( fatal_buffer, 4096, (f), ##__VA_ARGS__ ); \
+	log_printf( LOG_CRITICAL, "%s", fatal_buffer ); \
+	SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Critical", fatal_buffer, NULL ); \
 	quit( -1 ); \
 } while ( 0 )
 
+// main.c
 void	quit( int sig );
 
 /***********************************************************
@@ -65,6 +78,10 @@ extern int		base_fps;
 
 void	base_initialize( int argc, char *argv[] );
 void	base_shutdown( );
+
+char	*vstr( const char *fmt, ... );
+char	*joinpath( const char *base, const char *p );
+
 
 /***********************************************************
  * game.c 

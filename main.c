@@ -2,7 +2,6 @@
 
 void quit( int sig )
 {
-	log_info( "Preparing to quit\n" );
 	if ( sig != -1 ) {
 		game_shutdown( );
 	}
@@ -14,14 +13,12 @@ void quit( int sig )
 
 void initialize( int argc, char *argv[] )
 {
-	log_info( "Starting initialization\n" );
 	base_initialize( argc, argv );
 	audio_initialize( );
 	video_initialize( );
 	game_initialize( );
-
-	signal( SIGTERM, quit );
 	signal( SIGINT, quit );
+	signal( SIGTERM, quit );
 }
 
 void frame( )
@@ -45,7 +42,6 @@ void frame( )
 int main( int argc, char *argv[] )
 {
 	initialize( argc, argv );
-	log_info( "Running game loop\n" );
 	for ( ;; ) {
 		frame( );
 	}

@@ -71,7 +71,6 @@ static void video_initialize_default_configuration( )
 
 void video_initialize( )
 {
-	log_info( "Initializing video.\n" );
 	if ( !SDL_WasInit(SDL_INIT_VIDEO) ) {
 		if ( SDL_InitSubSystem(SDL_INIT_VIDEO) ) {
 			fatal( SDL_GetError() );
@@ -133,7 +132,6 @@ void video_shutdown( )
 {
 	int i, j;
 
-	log_info( "Shutting down video.\n" );
 	video_stop_window( );
 	SDL_QuitSubSystem( SDL_INIT_VIDEO );
 	if ( video_options.driver != NULL ) {
@@ -543,7 +541,9 @@ static luaL_Reg moonbase_video_methods[] = {
 	{ "setMode", moonbase_video_set_mode },
 	{ "setPosition", moonbase_video_set_position },
 	{ "setSize", moonbase_video_set_size },
-	{ "setTitle", moonbase_video_set_title }
+	{ "setTitle", moonbase_video_set_title },
+
+	{ NULL, NULL }
 };
 
 static void moonbase_video_push_drivers_table( lua_State *s )
