@@ -12,7 +12,6 @@ SDL2, SDL2 image, SDL2 ttf, SDL2 mixer, talloc, json-c, lua5.2
 
 Run make
 
-
 Building on Mac
 ===============
 
