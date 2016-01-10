@@ -73,7 +73,7 @@ void video_initialize( )
 {
 	if ( !SDL_WasInit(SDL_INIT_VIDEO) ) {
 		if ( SDL_InitSubSystem(SDL_INIT_VIDEO) ) {
-			fatal( SDL_GetError() );
+			fatal( "%s", SDL_GetError() );
 		}
 	}
 	video_initialize_default_configuration( );
@@ -97,7 +97,7 @@ void video_stop_window( )
 void video_start_window( )
 {
 	if ( SDL_VideoInit(video_options.driver) ) {
-		fatal( SDL_GetError() );
+		fatal( "%s", SDL_GetError() );
 	}
 	video_window = SDL_CreateWindow(
 		video_options.title,
@@ -107,11 +107,11 @@ void video_start_window( )
 		video_options.size.h,
 		SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI );
 	if ( video_window == NULL ) {
-		fatal( SDL_GetError() );
+		fatal( "%s", SDL_GetError() );
 	}
 	video_renderer = SDL_CreateRenderer( video_window, -1, SDL_RENDERER_ACCELERATED );
 	if ( video_renderer == NULL ) {
-		fatal( SDL_GetError() );
+		fatal( "%s", SDL_GetError() );
 	}
 	SDL_SetRenderDrawBlendMode( video_renderer, SDL_BLENDMODE_BLEND );
 	SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" );

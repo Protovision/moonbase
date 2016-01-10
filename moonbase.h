@@ -1,19 +1,29 @@
 #ifndef BASE_H
 #define BASE_H
 
+#include <signal.h>
+#ifndef LUA_COMPAT_APIINTCASTS
+#define LUA_COMPAT_APIINTCASTS
+#endif
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+#if defined(__APPLE__)
+#include <SDL2/SDL.h>
+#include <SDL2_image/SDL_image.h>
+#include <SDL2_mixer/SDL_mixer.h>
+#include <SDL2_ttf/SDL_ttf.h>
+#elif defined(__linux__)
 #include "SDL.h"
 #include "SDL_image.h"
-#include "SDL_ttf.h"
 #include "SDL_mixer.h"
+#include "SDL_ttf.h"
+#endif
 #include "unzip.h"
-#include "luacom.h"
-#include <talloc.h>
-#include <json-c/linkhash.h>
+#include "talloc.h"
+#include "linkhash.h"
 
-#include <signal.h>
+#include "luacom.h"
 
 #define MAX_STRING	32000
 #define MAX_PATHNAME	256

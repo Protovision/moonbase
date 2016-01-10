@@ -112,11 +112,11 @@ ASSET *archive_load_image( const char *filename )
 	}
 	surface = IMG_Load_RW( archive_open_file(filename), 1 );
 	if ( surface == NULL ) {
-		fatal( IMG_GetError() );
+		fatal( "%s", IMG_GetError() );
 	}
 	texture = SDL_CreateTextureFromSurface( video_renderer, surface );
 	if ( texture == NULL ) {
-		fatal( SDL_GetError() );
+		fatal( "%s", SDL_GetError() );
 	}
 	SDL_FreeSurface( surface );
 	SDL_SetTextureBlendMode( texture, SDL_BLENDMODE_BLEND );
@@ -134,7 +134,7 @@ ASSET *archive_load_sound( const char *filename )
 	}
 	sound = Mix_LoadWAV_RW( archive_open_file(filename), 1 );
 	if ( sound == NULL ) {
-		fatal( Mix_GetError() );
+		fatal( "%s", Mix_GetError() );
 	}
 	return asset_create( sound, ASSET_SOUND, filename );
 }

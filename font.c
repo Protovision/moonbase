@@ -6,7 +6,7 @@ void font_get_render_size( ASSET *font, const char *text, Size *size )
 
 	result = TTF_SizeText( asset_font_handle(font), text, &size->w, &size->h );
 	if ( result == -1 ) {
-		fatal( TTF_GetError() );
+		fatal( "%s", TTF_GetError() );
 	}
 }
 
@@ -24,11 +24,11 @@ ASSET *font_render_text( ASSET *font, const char *text, const char *color )
 	sdl_color = *(SDL_Color*)&c;
 	surface = TTF_RenderText_Blended( asset_font_handle(font), text, sdl_color );
 	if ( surface == NULL ) {
-		fatal( TTF_GetError() );
+		fatal( "%s", TTF_GetError() );
 	}
 	texture = SDL_CreateTextureFromSurface( video_renderer, surface );
 	if ( texture == NULL ) {
-		fatal( SDL_GetError() );
+		fatal( "%s", SDL_GetError() );
 	}
 	SDL_FreeSurface( surface );
 	return asset_create( texture, ASSET_IMAGE, NULL );

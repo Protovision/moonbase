@@ -1,0 +1,29 @@
+moonbase is a 2D engine for Lua scripts
+
+Documentation
+=============
+https://github.com/Protovision/moonbase/wiki
+
+Building on Linux
+=================
+
+Make sure you have the following development libraries installed:
+SDL2, SDL2 image, SDL2 ttf, SDL2 mixer, talloc, json-c, lua5.2
+
+Run make
+
+
+Building on Mac
+===============
+
+Download the development framework files for SDL2, SDL2 image, SDL2 ttf, and SDL2 mixer.
+Copy them to /Library/Frameworks
+
+Run make
+
+Building on Windows
+===================
+
+Not supported yet
+
+

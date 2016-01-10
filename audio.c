@@ -11,7 +11,7 @@ void audio_initialize( )
 {
 	if ( !SDL_WasInit(SDL_INIT_AUDIO) ) {
 		if ( SDL_InitSubSystem(SDL_INIT_AUDIO) ) {
-			fatal( SDL_GetError() );
+			fatal( "%s", SDL_GetError() );
 		}
 	}
 }
@@ -26,11 +26,11 @@ void audio_start_mixer( )
 	desired.channels = audio_options.audio_channels;
 	desired.samples = audio_options.samples;
 	if ( Mix_OpenAudio(desired.freq, desired.format, desired.channels, desired.samples) ) {
-		fatal( Mix_GetError() );
+		fatal( "%s", Mix_GetError() );
 	}
 	Mix_Init( MIX_INIT_OGG | MIX_INIT_MP3 );
 	if ( Mix_AllocateChannels(audio_options.sound_channels) < audio_options.sound_channels ) {
-		fatal( Mix_GetError() );
+		fatal( "%s", Mix_GetError() );
 	}
 	Mix_Resume( -1 );
 	audio_initialized = 1;
