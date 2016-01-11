@@ -85,6 +85,7 @@ extern lua_State	*base_engine_state;
 extern lua_State	*base_game_state;
 extern unzFile		base_archive;
 extern int		base_fps;
+extern Uint32		base_resume_time;
 
 void	base_initialize( int argc, char *argv[] );
 void	base_shutdown( );

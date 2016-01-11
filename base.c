@@ -9,6 +9,7 @@ TALLOC_CTX	*base_pool;
 lua_State	*base_engine_state;
 lua_State	*base_game_state;
 int		base_fps;
+Uint32		base_resume_time;
 
 static void *base_engine_state_allocator( void *ud, void *ptr, size_t osize, size_t nsize )
 {
@@ -53,6 +54,7 @@ void base_initialize( int argc, char *argv[] )
 	base_config_script = NULL;
 	base_main_script = NULL;
 	base_fps = 30;
+	base_resume_time = 0;
 
 	SDL_Init( 0 );
 	log_set_verbosity( LOG_VERBOSE );
@@ -173,6 +175,11 @@ static int moonbase_set_fps( lua_State *s )
 
 static int moonbase_yield( lua_State *s )
 {
+	if ( lua_gettop(s) == 1 ) {
+		base_resume_time = SDL_GetTicks( ) + luaL_checkunsigned( s, 1 );
+	} else {
+		base_resume_time = 0;
+	}
 	lua_yield( base_game_state, 0 );
 	return lua_gettop( base_game_state );
 }
@@ -181,6 +188,7 @@ static int moonbase_resume( lua_State *s )
 {
 	int nargs;
 
+	base_resume_time = 0;
 	nargs = lua_gettop( base_engine_state );
 	lua_xmove( base_engine_state, base_game_state, nargs );
 	lua_resume( base_game_state, base_engine_state, nargs );

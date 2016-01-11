@@ -27,6 +27,13 @@ void frame( )
 
 	start = SDL_GetTicks( );
 
+	if ( base_resume_time && start >= base_resume_time ) {
+		base_resume_time = 0;
+		lua_settop( base_game_state, 0 );
+		lua_resume( base_game_state, base_engine_state, 0 );
+		return;
+	}
+
 	game_input( );
 	game_update( );
 	video_render( );
