@@ -10,6 +10,7 @@
 #define LUACOM_H
 
 #include <stdarg.h>
+#include <string.h>
 #ifndef LUA_COMPAT_APIINTCASTS
 #define LUA_COMPAT_APIINTCASTS
 #endif

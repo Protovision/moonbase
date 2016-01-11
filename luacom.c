@@ -160,7 +160,7 @@ void luacom_create_object( lua_State *s, const char *classname, void *data, size
 	void *userdata;
 
 	userdata = lua_newuserdata( s, data_size );
-	SDL_memcpy( userdata, data, data_size );
+	memcpy( userdata, data, data_size );
 	luaL_newmetatable( s, classname );
 	luaL_setfuncs( s, methods, 0 );
 	lua_pushvalue( s, -1 );
