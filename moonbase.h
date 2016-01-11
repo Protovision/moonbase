@@ -13,7 +13,6 @@
 #include <SDL2_image/SDL_image.h>
 #include <SDL2_mixer/SDL_mixer.h>
 #include <SDL2_ttf/SDL_ttf.h>
-#include <SDL2/SDL_main.h>
 #elif defined(__linux__)
 #include "SDL.h"
 #include "SDL_image.h"
