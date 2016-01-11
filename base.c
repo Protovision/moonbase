@@ -106,7 +106,9 @@ void base_initialize( int argc, char *argv[] )
 		base_main_script = SDL_strdup( "main.lua" );
 	}
 	if ( base_game_path == NULL ) {
-		base_game_path = SDL_strdup( "game.zip" );
+		p = SDL_GetBasePath( );
+		base_game_path = SDL_strdup( vstr("%sgame.zip", p, "game.zip") );
+		SDL_free( p );
 	}
 	if ( base_data_path == NULL ) {
 		base_data_path = SDL_GetPrefPath( "swoope", "moonbase" );
