@@ -50,7 +50,7 @@ void image_set_alpha( ASSET *image, float alpha )
 {
 	Uint8 alpha_int;
 
-	alpha_int = (Uint8)( 255.0f / alpha );
+	alpha_int = (Uint8)( 255.0f * alpha );
 	SDL_SetTextureAlphaMod( asset_image_handle(image), alpha_int );
 }
 
