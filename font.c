@@ -57,8 +57,8 @@ static int moonbase_font_get_render_size( lua_State *s )
 	font = *(ASSET**)luaL_checkudata( s, 1, "moonbase_font" );
 	text = luaL_checkstring( s, 2 );
 	font_get_render_size( font, text, &size );
-	lua_createtable( s, 0, 2 );
-	luacom_write_table( s, -1, "ii", 1, size.w, 2, size.h );
+	lua_newtable( s );
+	luacom_write_array( s, -1, "ii", 1, size.w, 2, size.h );
 	return 1;
 }
 

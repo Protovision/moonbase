@@ -420,7 +420,7 @@ static int moonbase_video_get_position( lua_State *s )
 
 	video_get_position( &point );
 	lua_createtable( s, 0, 2 );
-	luacom_write_table( s, -1, "ii", 1, point.x, 2, point.y );
+	luacom_write_array( s, -1, "ii", 1, point.x, 2, point.y );
 	return 1;
 }
 
@@ -430,7 +430,7 @@ static int moonbase_video_get_size( lua_State *s )
 
 	video_get_size( &size );
 	lua_createtable( s, 0, 2 );
-	luacom_write_table( s, -1, "ii", 1, size.w, 2, size.h );
+	luacom_write_array( s, -1, "ii", 1, size.w, 2, size.h );
 	return 1;
 }
 
