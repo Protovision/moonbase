@@ -250,6 +250,8 @@ void moonbase_initialize( lua_State *s )
 	lua_setfield( s, 2, "update" );
 	lua_setfield( s, 2, "shutdown" );
 	lua_setfield( s, 1, "event" );
+	lua_pushcfunction( s, moonbase_dummy_function );
+	lua_setfield( s, 1, "main" );
 	lua_setglobal( s, "moonbase" );
 }
 
