@@ -109,7 +109,7 @@ void video_start_window( )
 	if ( video_window == NULL ) {
 		fatal( "%s", SDL_GetError() );
 	}
-	video_renderer = SDL_CreateRenderer( video_window, -1, SDL_RENDERER_ACCELERATED );
+	video_renderer = SDL_CreateRenderer( video_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC );
 	if ( video_renderer == NULL ) {
 		fatal( "%s", SDL_GetError() );
 	}
