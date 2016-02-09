@@ -88,13 +88,13 @@ void *archive_load_font( const char *filename, int size )
 	TTF_Font *font;
 	char buf[264];
 
-	if ( asset_acquire(filename) != NULL ) return filename;
+	if ( asset_acquire((void*)filename) != NULL ) return (void*)filename;
 	font = TTF_OpenFontRW( archive_open_file(filename), 1, size );
 	if ( font == NULL ) {
 		fatal( "Failed to load font %s:\n%s\n", filename, TTF_GetError() );
 	}
 	SDL_snprintf( buf, 256, "%s:%d", filename, size );
-	return asset_create( font, ASSET_FONT, buf );
+	return asset_create( buf, font, ASSET_FONT );
 }
 
 void *archive_load_image( const char *filename )
@@ -102,7 +102,7 @@ void *archive_load_image( const char *filename )
 	SDL_Texture *texture;
 	SDL_Surface *surface;
 
-	if ( asset_acquire(filename) != NULL ) return filename;
+	if ( asset_acquire((void*)filename) != NULL ) return (void*)filename;
 	surface = IMG_Load_RW( archive_open_file(filename), 1 );
 	if ( surface == NULL ) {
 		fatal( "%s", IMG_GetError() );
@@ -120,7 +120,7 @@ void *archive_load_sound( const char *filename )
 {
 	Mix_Chunk *sound;
 
-	if ( asset_acquire(filename) != NULL ) return filename;
+	if ( asset_acquire((void*)filename) != NULL ) return (void*)filename;
 	sound = Mix_LoadWAV_RW( archive_open_file(filename), 1 );
 	if ( sound == NULL ) {
 		fatal( "%s", Mix_GetError() );

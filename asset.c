@@ -59,7 +59,7 @@ struct asset *asset_find( void *key )
 {
 	struct asset *ent;
 
-	if ( mht_get(asset_table, key, &ent) ) return NULL;
+	if ( mht_get(asset_table, key, (void**)&ent) ) return NULL;
 	return ent;
 }
 
