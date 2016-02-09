@@ -102,7 +102,7 @@ void audio_set_sound_channels( int channels )
 	}
 }
 
-int sound_play( ASSET *sound, int fade_ms, int loop )
+int sound_play( void *sound, int fade_ms, int loop )
 {
 	if ( fade_ms != 0 ) {
 		return Mix_FadeInChannel( -1, asset_sound_handle(sound), loop ? -1 : 0, fade_ms );
@@ -300,10 +300,10 @@ static luaL_Reg moonbase_channel_methods[] = {
 
 static int moonbase_sound_play( lua_State *s )
 {
-	ASSET *sound;
+	void *sound;
 	int fade_ms, channel;
 
-	sound = *(ASSET**)luaL_checkudata( s, 1, "moonbase_sound" );
+	sound = *(void**)luaL_checkudata( s, 1, "moonbase_sound" );
 	fade_ms = luaL_optint( s, 2, 0 );
 	channel = sound_play( sound, fade_ms, 0 );
 	luacom_create_object( s, "moonbase_channel", &channel, sizeof(channel), moonbase_channel_methods );
@@ -312,10 +312,10 @@ static int moonbase_sound_play( lua_State *s )
 
 static int moonbase_sound_loop( lua_State *s )
 {
-	ASSET *sound;
+	void *sound;
 	int channel, fade_ms;
 
-	sound = *(ASSET**)luaL_checkudata( s, 1, "moonbase_sound" );
+	sound = *(void**)luaL_checkudata( s, 1, "moonbase_sound" );
 	fade_ms = luaL_optint( s, 2, 0 );
 	channel = sound_play( sound, fade_ms, 1 );
 	luacom_create_object( s, "moonbase_channel", &channel, sizeof(channel), moonbase_channel_methods );
@@ -324,9 +324,9 @@ static int moonbase_sound_loop( lua_State *s )
 
 static int moonbase_sound_gc( lua_State *s )
 {
-	ASSET *sound;
+	void *sound;
 
-	sound = *(ASSET**)luaL_checkudata( s, 1, "moonbase_sound" );
+	sound = *(void**)luaL_checkudata( s, 1, "moonbase_sound" );
 	asset_release( sound );
 	return 0;
 }

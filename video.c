@@ -1,6 +1,6 @@
 #include "moonbase.h"
 
-VideoDisplay		*video_displays;
+struct video_display	*video_displays;
 int			video_num_displays;
 
 char			**video_drivers;
@@ -12,9 +12,9 @@ SDL_Window 	*video_window;
 static struct {
 	SDL_DisplayMode	mode;
 	char		*title, *driver;
-	Point		position;
-	Size		size;
-	Size		logical_size;
+	struct point	position;
+	struct size	size;
+	struct size	logical_size;
 	int		grab_input, fullscreen, set_mode;
 	double		brightness;
 	SDL_Color	draw_color;
@@ -35,15 +35,15 @@ static void video_discover_drivers( )
 static void video_discover_displays( )
 {
 	int i, j, num_modes;
-	Rectangle bounds;
+	struct rectangle bounds;
 
 	video_num_displays = SDL_GetNumVideoDisplays( );
-	video_displays = (VideoDisplay*)SDL_calloc( video_num_displays, sizeof(VideoDisplay) );
+	video_displays = (struct video_display*)SDL_calloc( video_num_displays, sizeof(struct video_display) );
 	for ( i = 0; i < video_num_displays; ++i ) {
 		SDL_GetDisplayBounds( i, (SDL_Rect*)&video_displays[i].location );
 		//SDL_GetDisplayDPI( i, &video_displays[i].dpi[0], &video_displays[i].dpi[1], &video_displays[i].dpi[2] );
 		video_displays[i].num_modes = SDL_GetNumDisplayModes( i );
-		video_displays[i].modes = (VideoMode*)SDL_calloc( video_displays[i].num_modes, sizeof(VideoMode) );
+		video_displays[i].modes = (struct video_mode*)SDL_calloc( video_displays[i].num_modes, sizeof(struct video_mode) );
 		for ( j = 0; j < video_displays[i].num_modes; ++j ) {
 			SDL_GetDisplayMode( i, j, (SDL_DisplayMode*)&video_displays[i].modes[j] );	
 		}
@@ -172,7 +172,7 @@ double video_get_brightness( )
 	return SDL_GetWindowBrightness( video_window );
 }
 
-const VideoDisplay *video_get_display( )
+const struct video_display *video_get_display( )
 {
 	return &video_displays[ SDL_GetWindowDisplayIndex(video_window) ];
 }
@@ -182,33 +182,33 @@ const char *video_get_driver( )
 	return SDL_GetCurrentVideoDriver( );
 }
 
-const Size *video_get_logical_size( )
+const struct size *video_get_logical_size( )
 {
-	static Size size;
+	static struct size size;
 
 	SDL_RenderGetLogicalSize( video_renderer, &size.w, &size.h );
 	return &size;
 }
 
-const VideoMode *video_get_mode( )
+const struct video_mode *video_get_mode( )
 {
-	static VideoMode mode;
+	static struct video_mode mode;
 
 	SDL_GetWindowDisplayMode( video_window, (SDL_DisplayMode*)&mode );
 	return &mode;
 }
 
-const Point *video_get_position( )
+const struct point *video_get_position( )
 {
-	static Point point;
+	static struct point point;
 
 	SDL_GetWindowPosition( video_window, &point.x, &point.y );
 	return &point;
 }
 
-const Size *video_get_size( )
+const struct size *video_get_size( )
 {
-	static Size size;
+	static struct size size;
 
 	SDL_GetWindowSize( video_window, &size.w, &size.h );
 	return &size;
@@ -267,7 +267,7 @@ void video_set_input_grabbed( int input_grabbed )
 	}
 }
 
-void video_set_logical_size( const Size *size )
+void video_set_logical_size( const struct size *size )
 {
 	video_options.logical_size = *size;
 	if ( video_renderer != NULL ) {
@@ -275,7 +275,7 @@ void video_set_logical_size( const Size *size )
 	}
 }
 
-void video_set_mode( const VideoMode *mode )
+void video_set_mode( const struct video_mode *mode )
 {
 	video_options.mode = *(SDL_DisplayMode*)mode;
 	video_options.set_mode = 1;
@@ -284,7 +284,7 @@ void video_set_mode( const VideoMode *mode )
 	}
 }
 
-void video_set_position( const Point *position )
+void video_set_position( const struct point *position )
 {
 	video_options.position = *position;
 	if ( video_window != NULL ) {
@@ -292,7 +292,7 @@ void video_set_position( const Point *position )
 	}
 }
 
-void video_set_size( const Size *size )
+void video_set_size( const struct size *size )
 {
 	video_options.size = *size;
 	if ( video_window != NULL ) {
@@ -319,7 +319,7 @@ static int moonbase_video_clear( lua_State *s )
 
 static int moonbase_video_draw_line( lua_State *s )
 {
-	Point p1, p2;
+	struct point p1, p2;
 
 	luacom_read_array( s, 1, "ii", 1, &p1.x, 2, &p1.y );
 	luacom_read_array( s, 2, "ii", 1, &p2.x, 2, &p2.y );
@@ -329,7 +329,7 @@ static int moonbase_video_draw_line( lua_State *s )
 
 static int moonbase_video_draw_rect( lua_State *s )
 {
-	Rectangle r;
+	struct rectangle r;
 
 	luacom_read_array( s, 1, "iiii", 1, &r.x, 2, &r.y, 3, &r.w, 4, &r.h );
 	video_draw_rectangle( &r );
@@ -338,7 +338,7 @@ static int moonbase_video_draw_rect( lua_State *s )
 
 static int moonbase_video_fill_rect( lua_State *s )
 {
-	Rectangle r;
+	struct rectangle r;
 
 	luacom_read_array( s, 1, "iiii", 1, &r.x, 2, &r.y, 3, &r.w, 4, &r.h );
 	video_fill_rectangle( &r );
@@ -381,7 +381,7 @@ static int moonbase_video_get_brightness( lua_State *s )
 
 static int moonbase_video_get_display( lua_State *s )
 {
-	const VideoDisplay *display;
+	const struct video_display *display;
 
 	display = video_get_display( );
 	luacom_get_global_field( s, "moonbase", "video", "displays", NULL );
@@ -400,7 +400,7 @@ static int moonbase_video_get_driver( lua_State *s )
 
 static int moonbase_video_get_mode( lua_State *s )
 {
-	const VideoMode *mode;
+	const struct video_mode *mode;
 
 	mode = video_get_mode( );
 	lua_createtable( s, 0, 4 );
@@ -416,7 +416,7 @@ static int moonbase_video_get_mode( lua_State *s )
 
 static int moonbase_video_get_position( lua_State *s )
 {
-	const Point *point;
+	const struct point *point;
 
 	point = video_get_position(  );
 	lua_createtable( s, 0, 2 );
@@ -426,7 +426,7 @@ static int moonbase_video_get_position( lua_State *s )
 
 static int moonbase_video_get_size( lua_State *s )
 {
-	const Size *size;
+	const struct size *size;
 
 	size = video_get_size(  );
 	lua_createtable( s, 0, 2 );
@@ -475,7 +475,7 @@ static int moonbase_video_set_input_grabbed( lua_State *s )
 
 static int moonbase_video_set_mode( lua_State *s )
 {
-	VideoMode mode;
+	struct video_mode mode;
 
 	luacom_read_table( s, 1, "uip",
 		"format", &mode.format,
@@ -489,7 +489,7 @@ static int moonbase_video_set_mode( lua_State *s )
 
 static int moonbase_video_set_position( lua_State *s )
 {
-	Point position;
+	struct point position;
 
 	luacom_read_array( s, 1, "ii", 1, &position.x, 2, &position.y );
 	video_set_position( &position );
@@ -498,7 +498,7 @@ static int moonbase_video_set_position( lua_State *s )
 
 static int moonbase_video_set_size( lua_State *s )
 {
-	Size size;
+	struct size size;
 
 	luacom_read_array( s, 1, "ii", 1, &size.w, 2, &size.h );
 	video_set_size( &size );
@@ -559,8 +559,8 @@ static void moonbase_video_push_drivers_table( lua_State *s )
 static void moonbase_video_push_displays_table( lua_State *s )
 {
 	int i, j, n;
-	VideoDisplay *disp;
-	VideoMode *mode;
+	struct video_display *disp;
+	struct video_mode *mode;
 
 	lua_createtable( s, 0, video_num_displays );
 	for ( i = 0; i < video_num_displays; ++i ) {

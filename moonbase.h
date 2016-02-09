@@ -21,19 +21,16 @@
 #endif
 #include "unzip.h"
 #include "talloc.h"
-#include "linkhash.h"
+#include "mht.h"
 
 #include "luacom.h"
 
 #define MAX_STRING	32000
 #define MAX_PATHNAME	256
 
-typedef SDL_Point	Point;
-typedef SDL_Rect	Rectangle;
-typedef struct {
-	int	w;
-	int	h;
-} Size;
+struct point { int x, y; };
+struct rectangle { int x, y, w, h; };
+struct size { int w, h; };
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define hton32(X)	(SDL_Swap32(X))
@@ -107,31 +104,27 @@ void	game_update( );
  * asset.c 
  **********************************************************/
 
-typedef struct lh_entry	ASSET;
-
 enum {
 	ASSET_FONT,
 	ASSET_IMAGE,
 	ASSET_SOUND
 };
 
-typedef struct {
+struct asset {
 	int	type;
 	void	*handle;
 	int	refcount;
-} asset_entry;
+};
+struct asset	*asset_find( void *key );
 
-void	asset_initialize( );
-void	asset_shutdown( );
-ASSET	*asset_create( void *handle, int asset_type, const char *key );
-ASSET	*asset_find( const char *key );
-ASSET	*asset_acquire( ASSET *asset );
-ASSET	*asset_release( ASSET *asset );
-
-#define		asset_get_handle( A )	(((asset_entry*)((A)->v))->handle)
-#define		asset_image_handle( A )	((SDL_Texture*)asset_get_handle((A)))
-#define		asset_font_handle( A )	((TTF_Font*)asset_get_handle((A)))
-#define		asset_sound_handle( A )	((Mix_Chunk*)asset_get_handle((A)))
+void		asset_initialize( );
+void		asset_shutdown( );
+void		*asset_create( const char *path, void *handle, int asset_type );
+void		*asset_acquire( void *asset );
+void		*asset_release( void *asset );
+SDL_Texture	*asset_image_handle( void *asset );
+TTF_Font	*asset_font_handle( void *asset );
+Mix_Chunk	*asset_sound_handle( void *asset );
 
 /***********************************************************
  * archive.c 
@@ -141,9 +134,9 @@ void	archive_initialize( );
 void	archive_shutdown( );
 int	archive_contains( const char *file );
 int	archive_load_script( const char *file );
-ASSET	*archive_load_font( const char *file, int size );
-ASSET	*archive_load_image( const char *file );
-ASSET	*archive_load_sound( const char *file );
+void	*archive_load_font( const char *file, int size );
+void	*archive_load_image( const char *file );
+void	*archive_load_sound( const char *file );
 
 /***********************************************************
  * audio.c 
@@ -178,7 +171,7 @@ void	channel_stop( int channel, int fade );
 void	channel_pause( int channel );
 void	channel_resume( int channel );
 
-int	sound_play( ASSET *sound, int fade_ms, int loop );
+int	sound_play( void *sound, int fade_ms, int loop );
 
 #define	channel_get_volume(C)	((float)(Mix_Volume((C),-1)/MIX_MAX_VOLUME))
 #define	channel_set_volume(C,V)	((void)(Mix_Volume((C),MIX_MAX_VOLUME*(V))))
@@ -190,25 +183,24 @@ int	sound_play( ASSET *sound, int fade_ms, int loop );
  * video.c 
  **********************************************************/
 
-typedef struct {
-	Uint32	format;
-	Size	size;
-	int	refresh_rate;
-	void	*opaque;
-} VideoMode;
+struct video_mode {
+	Uint32		format;
+	struct size	size;
+	int		refresh_rate;
+	void		*opaque;
+};
 
-typedef struct {
-	Point		location;
-	Size		size;
-	//double	dpi[3];
-	VideoMode	*modes;
-	int		num_modes;
-} VideoDisplay;
+struct video_display {
+	struct point		location;
+	struct size		size;
+	struct video_mode	*modes;
+	int			num_modes;
+};
 
-extern VideoDisplay	*video_displays;
-extern int		video_num_displays;
-extern char		**video_drivers;
-extern int		video_num_drivers;
+extern struct video_display	*video_displays;
+extern int			video_num_displays;
+extern char			**video_drivers;
+extern int			video_num_drivers;
 
 extern SDL_Renderer	*video_renderer;
 extern SDL_Window	*video_window;
@@ -221,50 +213,50 @@ void	video_stop_window( );
 #define video_restart( )		do { video_stop_window( ); video_start_window( ); } while ( 0 )
 #define	video_clear( )			((void)(SDL_RenderClear(video_renderer)))
 #define	video_draw_line(P,Q)		((void)(SDL_RenderDrawLine(video_renderer,(P)->x,(P)->y,(Q)->x,(Q)->y)))
-#define	video_draw_rectangle(R)		((void)(SDL_RenderDrawRect(video_renderer,(R))))
-#define	video_fill_rectangle(R)		((void)(SDL_RenderFillRect(video_renderer,(R))))
+#define	video_draw_rectangle(R)		((void)(SDL_RenderDrawRect(video_renderer,(const SDL_Rect*)(R))))
+#define	video_fill_rectangle(R)		((void)(SDL_RenderFillRect(video_renderer,(const SDL_Rect*)(R))))
 #define video_render( )			((void)(SDL_RenderPresent(video_renderer)))
 #define video_show_messagebox(M)	((void)(SDL_ShowSimpleMessageBox(0,"",(M),NULL)))
 
-int			video_is_fullscreen( );
-int			video_is_input_grabbed( );
-double			video_get_brightness( );
-const VideoDisplay	*video_get_display( );
-const char		*video_get_driver( );
-const Size		*video_get_logical_size( );
-const VideoMode		*video_get_mode( );
-const Point		*video_get_position( );
-const Size		*video_get_size( );
-const char		*video_get_title( );
+int				video_is_fullscreen( );
+int				video_is_input_grabbed( );
+double				video_get_brightness( );
+const struct video_display	*video_get_display( );
+const char			*video_get_driver( );
+const struct size		*video_get_logical_size( );
+const struct video_mode		*video_get_mode( );
+const struct point		*video_get_position( );
+const struct size		*video_get_size( );
+const char			*video_get_title( );
 
 void	video_set_brightness( double brightness );
 void	video_set_draw_color( const char *color );
 void	video_set_driver( const char *driver_name );
 void	video_set_fullscreen( int fullscreen );
 void	video_set_input_grabbed( int input_grabbed );
-void	video_set_logical_size( const Size *size );
-void	video_set_mode( const VideoMode *mode );
-void	video_set_position( const Point *position );
-void	video_set_size( const Size *size );
+void	video_set_logical_size( const struct size *size );
+void	video_set_mode( const struct video_mode *mode );
+void	video_set_position( const struct point *position );
+void	video_set_size( const struct size *size );
 void	video_set_title( const char *title );
 
 /***********************************************************
 * font.c 
 **********************************************************/
 
-void	font_get_render_size( ASSET *font, const char *text, Size *size );
-ASSET	*font_render_text( ASSET *font, const char *text, const char *color );
+void	font_get_render_size( void *font, const char *text, struct size *size );
+void	*font_render_text( void *font, const char *text, const char *color );
 
 /***********************************************************
  * image.c 
  **********************************************************/
 
-void	image_draw( const Rectangle *destination, ASSET *image );
-void	image_draw_background( ASSET *image );
-void	image_draw_clip( const Rectangle *destination, ASSET *image, const Rectangle *source );
-void	image_get_size( ASSET *image, Size *size );
-float	image_get_alpha( ASSET *image );
-void	image_set_alpha( ASSET *image, float alpha );
+void	image_draw( const struct rectangle *destination, void *image );
+void	image_draw_background( void *image );
+void	image_draw_clip( const struct rectangle *destination, void *image, const struct rectangle *source );
+void	image_get_size( void *image, struct size *size );
+float	image_get_alpha( void *image );
+void	image_set_alpha( void *image, float alpha );
 
 /***********************************************************
  * storage.c 

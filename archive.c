@@ -82,16 +82,13 @@ static SDL_RWops *archive_open_file( const char *filename )
 	return ops;
 }
 
-ASSET *archive_load_font( const char *filename, int size )
+void *archive_load_font( const char *filename, int size )
 {
-	ASSET *asset;
+	void *asset;
 	TTF_Font *font;
 	char buf[264];
 
-	asset = asset_find( filename );
-	if ( asset != NULL ) {
-		return asset_acquire( asset );
-	}
+	if ( asset_acquire(filename) != NULL ) return filename;
 	font = TTF_OpenFontRW( archive_open_file(filename), 1, size );
 	if ( font == NULL ) {
 		fatal( "Failed to load font %s:\n%s\n", filename, TTF_GetError() );
@@ -100,16 +97,12 @@ ASSET *archive_load_font( const char *filename, int size )
 	return asset_create( font, ASSET_FONT, buf );
 }
 
-ASSET *archive_load_image( const char *filename )
+void *archive_load_image( const char *filename )
 {
-	ASSET *asset;
 	SDL_Texture *texture;
 	SDL_Surface *surface;
 
-	asset = asset_find( filename );
-	if ( asset != NULL ) {
-		return asset_acquire( asset );
-	}
+	if ( asset_acquire(filename) != NULL ) return filename;
 	surface = IMG_Load_RW( archive_open_file(filename), 1 );
 	if ( surface == NULL ) {
 		fatal( "%s", IMG_GetError() );
@@ -120,28 +113,24 @@ ASSET *archive_load_image( const char *filename )
 	}
 	SDL_FreeSurface( surface );
 	SDL_SetTextureBlendMode( texture, SDL_BLENDMODE_BLEND );
-	return asset_create( texture, ASSET_IMAGE, filename );
+	return asset_create( filename, texture, ASSET_IMAGE );
 }
 
-ASSET *archive_load_sound( const char *filename )
+void *archive_load_sound( const char *filename )
 {
-	ASSET *asset;
 	Mix_Chunk *sound;
 
-	asset = asset_find( filename );
-	if ( asset != NULL ) {
-		return asset_acquire( asset );
-	}
+	if ( asset_acquire(filename) != NULL ) return filename;
 	sound = Mix_LoadWAV_RW( archive_open_file(filename), 1 );
 	if ( sound == NULL ) {
 		fatal( "%s", Mix_GetError() );
 	}
-	return asset_create( sound, ASSET_SOUND, filename );
+	return asset_create( filename, sound, ASSET_SOUND );
 }
 
 static int moonbase_archive_font( lua_State *s )
 {
-	ASSET *font;
+	void *font;
 	extern luaL_Reg moonbase_font_methods[];
 
 	font = archive_load_font( luaL_checkstring(s, 1), luaL_checkinteger(s, 2) );
@@ -151,7 +140,7 @@ static int moonbase_archive_font( lua_State *s )
 
 static int moonbase_archive_image( lua_State *s )
 {
-	ASSET *image;
+	void *image;
 	extern luaL_Reg moonbase_image_methods[];
 
 	image = archive_load_image( luaL_checkstring(s, 1) );
@@ -161,7 +150,7 @@ static int moonbase_archive_image( lua_State *s )
 
 static int moonbase_archive_sound( lua_State *s )
 {
-	ASSET *sound;
+	void *sound;
 	extern luaL_Reg moonbase_sound_methods[];
 
 	sound = archive_load_sound( luaL_checkstring(s, 1) );

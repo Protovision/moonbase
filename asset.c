@@ -1,13 +1,13 @@
 #include "moonbase.h"
 
-static struct lh_table *asset_table;
+static struct mht *asset_table;
 
-void asset_free_entry( struct lh_entry *e )
+void asset_free_entry( void *k, void *v )
 {
-	asset_entry *ent;
+	struct asset *ent;
 
-	SDL_free( e->k );
-	ent = (asset_entry*)e->v;
+	SDL_free( k );
+	ent = (struct asset*)v;
 	switch ( ent->type ) {
 	case ASSET_FONT:
 		TTF_CloseFont( ent->handle );
@@ -24,7 +24,7 @@ void asset_free_entry( struct lh_entry *e )
 
 void asset_initialize( )
 {
-	asset_table = lh_kchar_table_new( 64, "asset_table", asset_free_entry );
+	asset_table = mht_strk_new( 128, asset_free_entry );
 	if ( asset_table == NULL ) {
 		fatal( "Failed to create asset table" );
 	}
@@ -32,54 +32,75 @@ void asset_initialize( )
 
 void asset_shutdown( )
 {
-	lh_table_free( asset_table );
+	mht_free( asset_table );
 }
 
-ASSET *asset_create( void *handle, int asset_type, const char *key )
+void *asset_create( const char *path, void *handle, int asset_type )
 {
 	char buf[32];
-	char *kptr;
-	asset_entry *ent;
+	char *key;
+	struct asset *ent;
 
-	if ( key != NULL ) {
-		kptr = SDL_strdup( key );
+	if ( path != NULL ) {
+		key = SDL_strdup( path );
 	} else {
 		SDL_snprintf( buf, 32, "@%p", handle );
-		kptr = SDL_strdup( buf );
+		key = SDL_strdup( buf );
 	}
-	ent = SDL_malloc( sizeof(asset_entry) );
+	ent = (struct asset*)SDL_malloc( sizeof(struct asset) );
 	ent->type = asset_type;
 	ent->handle = handle;
 	ent->refcount = 1;
-	lh_table_insert( asset_table, kptr, ent );
-	return lh_table_lookup_entry( asset_table, kptr );
+	mht_set( asset_table, key, ent, 1 );
+	return key;
 }
 
-ASSET *asset_find( const char *key )
+struct asset *asset_find( void *key )
 {
-	return lh_table_lookup_entry( asset_table, key );
+	struct asset *ent;
+
+	if ( mht_get(asset_table, key, &ent) ) return NULL;
+	return ent;
 }
 
-ASSET *asset_acquire( ASSET *asset )
+void *asset_acquire( void *key )
 {
-	asset_entry *ent;
-
-	ent = (asset_entry*)asset->v;
-	++ent->refcount;
-	return asset;
+	struct asset *ent;
+	
+	ent = asset_find( key );
+	if ( ent == NULL ) return NULL;
+	++asset_find( key )->refcount;
+	return key;
 }
 
-ASSET *asset_release( ASSET *asset )
+void *asset_release( void *key )
 {
-	asset_entry *ent;
+	struct asset *ent;
 
-	ent = (asset_entry*)asset->v;
+	ent = asset_find( key );
 	if ( --ent->refcount <= 0 ) {
-		lh_table_delete_entry( asset_table, asset );
+		mht_delete( asset_table, key );
 		return NULL;
 	}
-	return asset;
+	return key;
 }
+
+SDL_Texture *asset_image_handle( void *key )
+{
+	return (SDL_Texture*)asset_find(key)->handle;
+}
+
+TTF_Font *asset_font_handle( void *key )
+{
+	return (TTF_Font*)asset_find(key)->handle;
+}
+
+Mix_Chunk *asset_sound_handle( void *key )
+{
+	return (Mix_Chunk*)asset_find(key)->handle;
+}
+
+
 
 
 

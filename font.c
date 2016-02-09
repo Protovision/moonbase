@@ -1,6 +1,6 @@
 #include "moonbase.h"
 
-void font_get_render_size( ASSET *font, const char *text, Size *size )
+void font_get_render_size( void *font, const char *text, struct size *size )
 {
 	int result;
 
@@ -10,9 +10,9 @@ void font_get_render_size( ASSET *font, const char *text, Size *size )
 	}
 }
 
-ASSET *font_render_text( ASSET *font, const char *text, const char *color )
+void *font_render_text( void *font, const char *text, const char *color )
 {
-	ASSET *asset;
+	void *asset;
 	SDL_Rect rectangle;
 	SDL_Texture *texture;
 	SDL_Surface *surface;
@@ -31,16 +31,16 @@ ASSET *font_render_text( ASSET *font, const char *text, const char *color )
 		fatal( "%s", SDL_GetError() );
 	}
 	SDL_FreeSurface( surface );
-	return asset_create( texture, ASSET_IMAGE, NULL );
+	return asset_create( NULL, texture, ASSET_IMAGE );
 }
 
 static int moonbase_font_render( lua_State *s )
 {
-	ASSET *font, *image;
+	void *font, *image;
 	const char *text, *color;
 	extern luaL_Reg moonbase_image_methods[];
 
-	font = *(ASSET**)luaL_checkudata( s, 1, "moonbase_font" );
+	font = *(void**)luaL_checkudata( s, 1, "moonbase_font" );
 	text = luaL_checkstring( s, 2 );
 	color = luaL_checkstring( s, 3 );
 	image = font_render_text( font, text, color );
@@ -50,11 +50,11 @@ static int moonbase_font_render( lua_State *s )
 
 static int moonbase_font_get_render_size( lua_State *s )
 {
-	ASSET *font;
+	void *font;
 	const char *text;
-	Size size;
+	struct size size;
 
-	font = *(ASSET**)luaL_checkudata( s, 1, "moonbase_font" );
+	font = *(void**)luaL_checkudata( s, 1, "moonbase_font" );
 	text = luaL_checkstring( s, 2 );
 	font_get_render_size( font, text, &size );
 	lua_newtable( s );
@@ -64,9 +64,9 @@ static int moonbase_font_get_render_size( lua_State *s )
 
 static int moonbase_font_gc( lua_State *s )
 {
-	ASSET *font;
+	void *font;
 
-	font = *(ASSET**)luaL_checkudata( s, 1, "moonbase_font" );
+	font = *(void**)luaL_checkudata( s, 1, "moonbase_font" );
 	asset_release( font );
 	return 0;
 }
@@ -104,14 +104,14 @@ static int moonbase_text_stop( lua_State *s )
 
 static int moonbase_text_set_rect( lua_State *s )
 {
-	Rectangle r;
+	struct rectangle r;
 
 	luacom_read_array( s, 1, "iiii",
 		1, &r.x, 
 		2, &r.y,
 		3, &r.w,
 		4, &r.h );
-	SDL_SetTextInputRect( &r );
+	SDL_SetTextInputRect( (SDL_Rect*)&r );
 	return 0;
 }
 
