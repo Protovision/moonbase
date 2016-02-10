@@ -59,8 +59,8 @@ struct mht	*mht_ptrk_new( size_t initial_capacity, mht_free_fn *free_fn );
 void		mht_free( struct mht *t );
 int		mht_set( struct mht *t, void *k, void *v, int overwrite );
 int		mht_get( struct mht *t, void *k, void **v );
-void		mht_delete( struct mht *t, void *k );
-int		mht_rehash( struct mht *t, size_t new_capacity );
+void		mht_del( struct mht *t, void *k );
+int		mht_realloc( struct mht *t, size_t new_capacity );
 
 #endif
 

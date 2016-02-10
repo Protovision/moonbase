@@ -79,7 +79,7 @@ void *asset_release( void *key )
 
 	ent = asset_find( key );
 	if ( --ent->refcount <= 0 ) {
-		mht_delete( asset_table, key );
+		mht_del( asset_table, key );
 		return NULL;
 	}
 	return key;

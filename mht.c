@@ -118,7 +118,7 @@ int mht_set( struct mht *t, void *k, void *v, int overwrite )
 	struct mht_ent *e;
 
 	if ( t->size >= t->capacity * t->load_factor ) {
-		if ( mht_rehash(t, t->capacity * 2) ) return -1;
+		if ( mht_realloc(t, t->capacity * 2) ) return -1;
 	}
 	idx = t->hash_fn(k) % t->capacity;
 	e = mht_search_bucket( t, idx, k );
@@ -143,7 +143,7 @@ int mht_set( struct mht *t, void *k, void *v, int overwrite )
 	return 0;
 }
 
-void mht_delete( struct mht *t, void *k )
+void mht_del( struct mht *t, void *k )
 {
 	size_t idx;
 	struct mht_ent *e;
@@ -158,7 +158,7 @@ void mht_delete( struct mht *t, void *k )
 	--t->size;
 }
 
-int mht_rehash( struct mht *t, size_t new_capacity )
+int mht_realloc( struct mht *t, size_t new_capacity )
 {
 	size_t i;
 	struct mht *nt;
